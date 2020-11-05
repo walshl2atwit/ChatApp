@@ -26,14 +26,16 @@ public class ChatClient {
 		private void process() throws Exception{
 			while(true) {
 				String message = is.readLine();
+				// If header is POST then read message from server as text message
 				if (message.split("/")[0].equals("POST")) {
 					message = message.split("/")[1];
 					if (message != null && !message.split(":")[0].equals(clientName)) {
-						System.out.println(message + "\n\n");
+						System.out.println(message);
 					}
+				// If header is ALERT then read message from server as an alert
 				} else if (message.split("/")[0].equals("ALERT")) {
 					message = message.split("/")[1];
-					System.out.println(message + "\n\n");
+					System.out.println(message);
 				}
 			}
 		}
@@ -80,17 +82,6 @@ public class ChatClient {
 		// Tell server that you connected
 		String connectionMessage = "CONNECT/" + clientName + "\r\n\r\n";
 		os.writeBytes(connectionMessage);
-		
-		// Receives chat log and prints to client
-		String log = "";
-		String[] lines = is.lines().toArray(String[]::new);
-		for (int i = 0; i < lines.length; i++) {
-			log += lines[i];
-			if (i < lines.length - 1) {
-				log += "\r\n";
-			}
-		}
-		System.out.print(log);
 		
 		// Starts thread that receives messages from server
 		MessageReceiver receiver = new MessageReceiver(is, clientName);

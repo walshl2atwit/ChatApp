@@ -7,6 +7,7 @@ public class ChatServer {
 	
 	// ArrayList of all created threads
 	static ArrayList<Thread> threads = new ArrayList<Thread>();
+	static ArrayList<ClientHandler> clients = new ArrayList<ClientHandler>();
 	static File log = new File("log.txt");
 	
 	// Class that handles each client in order to make server multi-threaded
@@ -32,19 +33,23 @@ public class ChatServer {
 			// Set up input stream filters.
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			
-			// 
+			// Loop that constantly receives messages and manages the clients
 			while(true) {
 				String clientMessage = br.readLine();
 				if (clientMessage != null) {
+					// If message header is CONNECT, that signifies a user has connected and alerts the chat
 					if (clientMessage.split("/")[0].equals("CONNECT")) {
+						// Alerts that a new client as joined
 						clientMessage = clientMessage.split("/")[1] + " has joined the chat!";
 						System.out.println(clientMessage);
 						log(clientMessage);
+						sendToClients("ALERT/" + clientMessage + "\r\n\r\n");
+					// If message header is POST, that signifies the client is sending a text in the chat
 					} else if (clientMessage.split("/")[0].equals("POST")) {
-						System.out.println("test");
 						clientMessage = clientMessage.split("/")[1];
-						System.out.println(clientMessage);
 						log(clientMessage);
+						sendToClients("POST/" + clientMessage + "\r\n\r\n");
+					// If message header is GET, that signifies the client wants the log contents
 					}
 				}
 			}
@@ -63,7 +68,9 @@ public class ChatServer {
 			Socket connectionSocket = serverSocket.accept();
 			
 			ClientHandler client = new ClientHandler(connectionSocket);
+			clients.add(client);
 			Thread thread = new Thread(client);
+			threads.add(thread);
 			thread.start();
 		}
 		
@@ -71,9 +78,19 @@ public class ChatServer {
 	
 	// Method to add message to log
 	private static void log(String message) throws IOException {
-		PrintWriter writer = new PrintWriter(new FileWriter(log));
+		Scanner s = new Scanner(log);
+		//PrintWriter writer = new PrintWriter(new FileWriter(log));
+		BufferedWriter writer = new BufferedWriter(new FileWriter(log, true));
 		writer.write(message + "\n");
 		writer.close();
+	}
+	
+	// Method that sends a message to all connected clients
+	private static void sendToClients(String message) throws IOException {
+		for (int i = 0; i < clients.size(); i++) {
+			DataOutputStream os = new DataOutputStream(clients.get(i).socket.getOutputStream());
+			os.writeBytes(message);
+		}
 	}
 
 }
