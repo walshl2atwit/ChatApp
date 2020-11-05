@@ -1,8 +1,13 @@
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class ChatServer {
+	
+	// ArrayList of all created threads
+	static ArrayList<Thread> threads = new ArrayList<Thread>();
+	static File log = new File("log.txt");
 	
 	// Class that handles each client in order to make server multi-threaded
 	private static class ClientHandler implements Runnable{
@@ -26,37 +31,23 @@ public class ChatServer {
 
 			// Set up input stream filters.
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-			// Get the request line of the HTTP request message.
-			String requestLine = br.readLine();
-			System.out.println("Request received from client");
 			
-			// Reads requested file name from request
-			String fileName = requestLine.split("/")[1];
-			
-			// Reads html info from file
-			try {
-				Scanner s = new Scanner(new File(fileName));
-				String fileContents = "";
-				while (s.hasNextLine()) {
-					fileContents += s.nextLine();
-					if (s.hasNextLine()) {
-						fileContents += "\r\n";
+			// 
+			while(true) {
+				String clientMessage = br.readLine();
+				if (clientMessage != null) {
+					if (clientMessage.split("/")[0].equals("CONNECT")) {
+						clientMessage = clientMessage.split("/")[1] + " has joined the chat!";
+						System.out.println(clientMessage);
+						log(clientMessage);
+					} else if (clientMessage.split("/")[0].equals("POST")) {
+						System.out.println("test");
+						clientMessage = clientMessage.split("/")[1];
+						System.out.println(clientMessage);
+						log(clientMessage);
 					}
 				}
-				
-				// Sends response back to client with file and header
-				String responseLine = "HTTP/1.1 200 OK\r\n\r\n" + fileContents;
-				os.writeBytes(responseLine);
-				s.close();
-			} catch (Exception e) {
-				String resposneLine = "HTTP/1.0 404 Not Found\r\n\r\n<HTML><BODY><H1>Not Found</H1></BODY></HTML>";
-				os.writeBytes(resposneLine);
 			}
-			
-
-			is.close();
-			os.close();
 		}
 	}
 	
@@ -65,8 +56,9 @@ public class ChatServer {
 		
 		ServerSocket serverSocket = new ServerSocket(mainPort);
 		
-		System.out.println("The server is ready to receive.");
+		System.out.println("Waiting for connection...");
 		
+		// Creates new thread after each connection
 		while (true) {
 			Socket connectionSocket = serverSocket.accept();
 			
@@ -75,6 +67,13 @@ public class ChatServer {
 			thread.start();
 		}
 		
+	}
+	
+	// Method to add message to log
+	private static void log(String message) throws IOException {
+		PrintWriter writer = new PrintWriter(new FileWriter(log));
+		writer.write(message + "\n");
+		writer.close();
 	}
 
 }

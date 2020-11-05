@@ -31,6 +31,9 @@ public class ChatClient {
 					if (message != null && !message.split(":")[0].equals(clientName)) {
 						System.out.println(message + "\n\n");
 					}
+				} else if (message.split("/")[0].equals("ALERT")) {
+					message = message.split("/")[1];
+					System.out.println(message + "\n\n");
 				}
 			}
 		}
@@ -55,7 +58,8 @@ public class ChatClient {
 		private void process() throws Exception{
 			Scanner s = new Scanner(System.in);
 			while(true) {
-				String message = "POST/" + clientName + ": " + s.nextLine();
+				String input = s.nextLine();
+				String message = "POST/" + clientName + ": " + input + "\r\n\r\n";
 				os.writeBytes(message);
 			}
 		}
@@ -74,7 +78,7 @@ public class ChatClient {
 		BufferedReader is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		
 		// Tell server that you connected
-		String connectionMessage = "CONNECT/" + clientName;
+		String connectionMessage = "CONNECT/" + clientName + "\r\n\r\n";
 		os.writeBytes(connectionMessage);
 		
 		// Receives chat log and prints to client
