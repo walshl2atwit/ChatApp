@@ -26,6 +26,7 @@ public class ChatClient {
 		private void process() throws Exception{
 			while(true) {
 				String message = is.readLine();
+			
 				// If header is POST then read message from server as text message
 				if (message.split("/")[0].equals("POST")) {
 					message = message.split("/")[1];
@@ -59,11 +60,25 @@ public class ChatClient {
 		
 		private void process() throws Exception{
 			Scanner s = new Scanner(System.in);
+			
 			while(true) {
-				String input = s.nextLine();
+			
+			    			
+			    String input = null;
+				input = s.nextLine();
+				if(input.equals("quit"))
+			    {
+			    
+			        os.writeBytes("POST/" + clientName + " has left the chat" + "\r\n\r\n");
+			       
+			        break;
+			    }
 				String message = "POST/" + clientName + ": " + input + "\r\n\r\n";
 				os.writeBytes(message);
-			}
+			
+			} os.close();
+			
+			
 		}
 	}
 	
@@ -86,11 +101,13 @@ public class ChatClient {
 		// Starts thread that receives messages from server
 		MessageReceiver receiver = new MessageReceiver(is, clientName);
 		Thread threadReceiver = new Thread(receiver);
-		threadReceiver.start();
 		
+		threadReceiver.start();
+            
 		// Starts thread that sends messages to server
 		MessageSender sender = new MessageSender(os, clientName);
 		Thread threadSender = new Thread(sender);
+		
 		threadSender.start();
 	}
 

@@ -34,11 +34,13 @@ public class ChatServer {
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			
 			// Loop that constantly receives messages and manages the clients
+			
 			while(true) {
 				String clientMessage = br.readLine();
-				if (clientMessage != null) {
+				
+				
 					// If message header is CONNECT, that signifies a user has connected and alerts the chat
-					if (clientMessage.split("/")[0].equals("CONNECT")) {
+				   if (clientMessage.split("/")[0].equals("CONNECT")) {
 						// Alerts that a new client as joined
 						clientMessage = clientMessage.split("/")[1] + " has joined the chat!";
 						System.out.println(clientMessage);
@@ -47,6 +49,7 @@ public class ChatServer {
 					// If message header is POST, that signifies the client is sending a text in the chat
 					} else if (clientMessage.split("/")[0].equals("POST")) {
 						clientMessage = clientMessage.split("/")[1];
+						
 						log(clientMessage);
 						sendToClients("POST/" + clientMessage + "\r\n\r\n");
 					// If message header is GET, that signifies the client wants the log contents
@@ -54,7 +57,7 @@ public class ChatServer {
 				}
 			}
 		}
-	}
+	
 	
 	public static void main(String[] args) throws Exception {
 		int mainPort = 1234;
