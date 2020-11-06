@@ -49,15 +49,21 @@ public class ChatServer {
 					// If message header is POST, that signifies the client is sending a text in the chat
 					} else if (clientMessage.split("/")[0].equals("POST")) {
 						clientMessage = clientMessage.split("/")[1];
-						
 						log(clientMessage);
 						sendToClients("POST/" + clientMessage + "\r\n\r\n");
-					// If message header is GET, that signifies the client wants the log contents
+					// If message header is DISCONNECT, that signifies the client is trying to quit
+					} else if (clientMessage.split("/")[0].equals("DISCONNECT")) {
+						// Alerts that a new client as joined
+						clientMessage = clientMessage.split("/")[1] + " has left the chat!";
+						System.out.println(clientMessage);
+						log(clientMessage);
+						sendToClients("ALERT/" + clientMessage + "\r\n\r\n");
+						threads.remove(clients.indexOf(this));
+						clients.remove(this);
 					}
 				}
 			}
 		}
-	
 	
 	public static void main(String[] args) throws Exception {
 		int mainPort = 1234;
@@ -76,7 +82,6 @@ public class ChatServer {
 			threads.add(thread);
 			thread.start();
 		}
-		
 	}
 	
 	// Method to add message to log
@@ -95,5 +100,4 @@ public class ChatServer {
 			os.writeBytes(message);
 		}
 	}
-
 }

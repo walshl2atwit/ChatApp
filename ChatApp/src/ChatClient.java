@@ -61,24 +61,17 @@ public class ChatClient {
 		private void process() throws Exception{
 			Scanner s = new Scanner(System.in);
 			
-			while(true) {
-			
-			    			
+			while(true) {		
 			    String input = null;
 				input = s.nextLine();
-				if(input.equals("quit"))
-			    {
-			    
-			        os.writeBytes("POST/" + clientName + " has left the chat" + "\r\n\r\n");
-			       
-			        break;
+				if(input.equals("{quit}")) {
+			        os.writeBytes("DISCONNECT/" + clientName + "\r\n\r\n");
+			        System.exit(0);
+			    } else {
+					String message = "POST/" + clientName + ": " + input + "\r\n\r\n";
+					os.writeBytes(message);
 			    }
-				String message = "POST/" + clientName + ": " + input + "\r\n\r\n";
-				os.writeBytes(message);
-			
-			} os.close();
-			
-			
+			}
 		}
 	}
 	
@@ -101,13 +94,11 @@ public class ChatClient {
 		// Starts thread that receives messages from server
 		MessageReceiver receiver = new MessageReceiver(is, clientName);
 		Thread threadReceiver = new Thread(receiver);
-		
 		threadReceiver.start();
             
 		// Starts thread that sends messages to server
 		MessageSender sender = new MessageSender(os, clientName);
 		Thread threadSender = new Thread(sender);
-		
 		threadSender.start();
 	}
 
